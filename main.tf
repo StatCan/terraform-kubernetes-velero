@@ -11,6 +11,45 @@ resource "null_resource" "dependency_getter" {
   }
 }
 
+# Namespace admin role
+resource "kubernetes_role" "namespace-admin" {
+  metadata {
+    name = "tiller-velero"
+    namespace = "${var.helm_namespace}"
+  }
+
+  # Read/write access to velero resources
+  rule {
+    api_groups = ["velero.io"]
+    resources = ["*"]
+    verbs = ["get", "list", "watch", "create", "update", "patch", "delete", "edit", "exec"]
+  }
+
+  depends_on = [
+    "null_resource.dependency_getter",
+  ]
+}
+
+# Namespace admin role bindings
+resource "kubernetes_role_binding" "namespace-admins" {
+  metadata {
+    name = "tiller-velero"
+    namespace = "${var.helm_namespace}"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind = "Role"
+    name = "tiller-velero"
+  }
+
+  # Users
+  subject {
+    kind = "ServiceAccount"
+    name = "${var.helm_service_account}"
+  }
+}
+
 resource "helm_release" "velero" {
   depends_on = ["null_resource.dependency_getter"]
   name = "velero"
