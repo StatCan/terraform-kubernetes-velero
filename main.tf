@@ -58,6 +58,7 @@ resource "kubernetes_role_binding" "tiller-velero" {
   subject {
     kind = "ServiceAccount"
     name = "${var.helm_service_account}"
+    namespace = "${var.helm_namespace}"
   }
 }
 
