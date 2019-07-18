@@ -21,8 +21,9 @@ resource "null_resource" "wait-dependencies" {
   ]
 }
 
+
 # Namespace admin role
-resource "kubernetes_role" "namespace-admin" {
+resource "kubernetes_role" "tiller-velero" {
   metadata {
     name = "tiller-velero"
     namespace = "${var.helm_namespace}"
@@ -41,7 +42,7 @@ resource "kubernetes_role" "namespace-admin" {
 }
 
 # Namespace admin role bindings
-resource "kubernetes_role_binding" "namespace-admins" {
+resource "kubernetes_role_binding" "tiller-velero" {
   metadata {
     name = "tiller-velero"
     namespace = "${var.helm_namespace}"
@@ -61,7 +62,7 @@ resource "kubernetes_role_binding" "namespace-admins" {
 }
 
 resource "helm_release" "velero" {
-  depends_on = ["null_resource.wait-dependencies", "null_resource.dependency_getter"]
+  depends_on = ["null_resource.wait-dependencies", "null_resource.dependency_getter", "kubernetes_role.tiller-velero", "kubernetes_role_binding.tiller-velero"]
   name = "velero"
   repository = "artifactory"
   chart = "velero"
