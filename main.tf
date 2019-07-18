@@ -11,6 +11,16 @@ resource "null_resource" "dependency_getter" {
   }
 }
 
+resource "null_resource" "wait-dependencies" {
+  provisioner "local-exec" {
+    command = "helm ls --tiller-namespace ${var.helm_namespace}"
+  }
+
+  depends_on = [
+    "null_resource.dependency_getter",
+  ]
+}
+
 # Namespace admin role
 resource "kubernetes_role" "namespace-admin" {
   metadata {
@@ -51,7 +61,7 @@ resource "kubernetes_role_binding" "namespace-admins" {
 }
 
 resource "helm_release" "velero" {
-  depends_on = ["null_resource.dependency_getter"]
+  depends_on = ["null_resource.wait-dependencies", "null_resource.dependency_getter"]
   name = "velero"
   repository = "artifactory"
   chart = "velero"
