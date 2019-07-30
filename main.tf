@@ -98,7 +98,7 @@ resource "helm_release" "velero" {
   }
 
   set {
-    name = "velero.credentials.secretContents.AZURE_CLIENT_SECRENT"
+    name = "velero.credentials.secretContents.AZURE_CLIENT_SECRET"
     value = "${var.azure_client_secret}"
   }
 
