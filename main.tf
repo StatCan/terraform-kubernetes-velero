@@ -72,7 +72,7 @@ resource "helm_release" "velero" {
   timeout = 1200
 
   values = [
-    "${file("${path.module}/values/velero.yaml")}",
+    "${var.values}",
   ]
 
   # Backup Storage Location

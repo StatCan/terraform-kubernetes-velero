@@ -23,3 +23,8 @@ variable "azure_tenant_id" {}
 variable "dependencies" {
   type = "list"
 }
+
+variable "values" {
+  default = ""
+  type = "string"
+}
