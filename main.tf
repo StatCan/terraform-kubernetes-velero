@@ -65,7 +65,7 @@ resource "kubernetes_role_binding" "tiller-velero" {
 resource "helm_release" "velero" {
   depends_on = ["null_resource.wait-dependencies", "null_resource.dependency_getter", "kubernetes_role.tiller-velero", "kubernetes_role_binding.tiller-velero"]
   name = "velero"
-  repository = "artifactory"
+  repository = "${var.helm_repository}"
   chart = "velero"
   version = "${var.chart_version}"
   namespace = "${var.helm_namespace}"
