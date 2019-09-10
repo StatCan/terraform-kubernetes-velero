@@ -27,7 +27,7 @@ module "helm_velero" {
 
   helm_service_account = "tiller"
   helm_namespace = "velero"
-  helm_repository = "artifactory"
+  helm_repository = "stable"
 
   backup_storage_resource_group = "${var.velero_backup_storage_resource_group}"
   backup_storage_account = "${var.velero_backup_storage_account}"
