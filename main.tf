@@ -99,28 +99,14 @@ resource "helm_release" "velero" {
 
   # Credentials
   set {
-    name  = "velero.credentials.secretContents.AZURE_CLIENT_ID"
-    value = "${var.azure_client_id}"
-  }
-
-  set {
-    name  = "velero.credentials.secretContents.AZURE_CLIENT_SECRET"
-    value = "${var.azure_client_secret}"
-  }
-
-  set {
-    name  = "velero.credentials.secretContents.AZURE_RESOURCE_GROUP"
-    value = "${var.azure_resource_group}"
-  }
-
-  set {
-    name  = "velero.credentials.secretContents.AZURE_SUBSCRIPTION_ID"
-    value = "${var.azure_subscription_id}"
-  }
-
-  set {
-    name  = "velero.credentials.secretContents.AZURE_TENANT_ID"
-    value = "${var.azure_tenant_id}"
+    name  = "velero.credentials.secretContents.cloud"
+    value = <<EOF
+AZURE_CLIENT_ID: ${var.azure_client_id}
+AZURE_CLIENT_SECRET: ${var.azure_client_secret}
+AZURE_RESOURCE_GROUP: ${var.azure_resource_group}
+AZURE_SUBSCRIPTION_ID: ${var.azure_subscription_id}
+AZURE_TENANT_ID: ${var.azure_tenant_id}
+EOF
   }
 }
 
