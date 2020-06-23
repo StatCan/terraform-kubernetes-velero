@@ -17,59 +17,8 @@ resource "null_resource" "dependency_getter" {
   }
 }
 
-resource "null_resource" "wait-dependencies" {
-  provisioner "local-exec" {
-    command = "helm ls --tiller-namespace ${var.helm_namespace}"
-  }
-
-  depends_on = [
-    "null_resource.dependency_getter",
-  ]
-}
-
-
-# Namespace admin role
-resource "kubernetes_role" "tiller-velero" {
-  metadata {
-    name      = "tiller-velero"
-    namespace = "${var.helm_namespace}"
-  }
-
-  # Read/write access to velero resources
-  rule {
-    api_groups = ["velero.io"]
-    resources  = ["*"]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete", "edit", "exec"]
-  }
-
-  depends_on = [
-    "null_resource.dependency_getter",
-  ]
-}
-
-# Namespace admin role bindings
-resource "kubernetes_role_binding" "tiller-velero" {
-  metadata {
-    name      = "tiller-velero"
-    namespace = "${var.helm_namespace}"
-  }
-
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "Role"
-    name      = "tiller-velero"
-  }
-
-  # Users
-  subject {
-    kind      = "ServiceAccount"
-    name      = "${var.helm_service_account}"
-    namespace = "${var.helm_namespace}"
-  }
-}
-
 resource "helm_release" "velero" {
-  depends_on = ["null_resource.wait-dependencies", "null_resource.dependency_getter", "kubernetes_role.tiller-velero", "kubernetes_role_binding.tiller-velero"]
+  depends_on = ["null_resource.dependency_getter"]
   name       = "velero"
   repository = "${var.helm_repository}"
   chart      = "velero"
