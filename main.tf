@@ -20,10 +20,14 @@ resource "null_resource" "dependency_getter" {
 resource "helm_release" "velero" {
   depends_on = ["null_resource.dependency_getter"]
   name       = "velero"
-  repository = "${var.helm_repository}"
+
+  repository          = var.helm_repository
+  repository_username = var.helm_repository_username
+  repository_password = var.helm_repository_password
+
   chart      = "velero"
-  version    = "${var.chart_version}"
-  namespace  = "${var.helm_namespace}"
+  version    = var.chart_version
+  namespace  = var.helm_namespace
   timeout    = 1200
 
   values = [
@@ -33,17 +37,17 @@ resource "helm_release" "velero" {
   # Backup Storage Location
   set {
     name  = "velero.configuration.backupStorageLocation.bucket"
-    value = "${var.backup_storage_bucket}"
+    value = var.backup_storage_bucket
   }
 
   set {
     name  = "velero.configuration.backupStorageLocation.config.resourceGroup"
-    value = "${var.backup_storage_resource_group}"
+    value = var.backup_storage_resource_group
   }
 
   set {
     name  = "velero.configuration.backupStorageLocation.config.storageAccount"
-    value = "${var.backup_storage_account}"
+    value = var.backup_storage_account
   }
 
   # Credentials

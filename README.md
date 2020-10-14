@@ -22,7 +22,7 @@ The following security controls can be met through configuration of this templat
 
 ```terraform
 module "helm_velero" {
-  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v2.0.0"
+  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v2.0.1"
 
   chart_version = "0.1.0"
   dependencies = [
@@ -32,15 +32,15 @@ module "helm_velero" {
   helm_namespace       = "velero"
   helm_repository      = "stable"
 
-  backup_storage_resource_group = "${var.velero_backup_storage_resource_group}"
-  backup_storage_account        = "${var.velero_backup_storage_account}"
-  backup_storage_bucket         = "${var.velero_backup_storage_bucket}"
+  backup_storage_resource_group = var.velero_backup_storage_resource_group
+  backup_storage_account        = var.velero_backup_storage_account
+  backup_storage_bucket         = var.velero_backup_storage_bucket
 
-  azure_client_id       = "${var.velero_azure_client_id}"
-  azure_client_secret   = "${var.velero_azure_client_secret}"
-  azure_resource_group  = "${var.velero_azure_resource_group}"
-  azure_subscription_id = "${var.velero_azure_subscription_id}"
-  azure_tenant_id       = "${var.velero_azure_tenant_id}"
+  azure_client_id       = var.velero_azure_client_id
+  azure_client_secret   = var.velero_azure_client_secret
+  azure_resource_group  = var.velero_azure_resource_group
+  azure_subscription_id = var.velero_azure_subscription_id
+  azure_tenant_id       = var.velero_azure_tenant_id
 
   values = <<EOF
 velero:
@@ -85,26 +85,29 @@ EOF
 
 ## Variables Values
 
-| Name                          | Type   | Required | Value                                                     |
-| ----------------------------- | ------ | -------- | --------------------------------------------------------- |
-| chart_version                 | string | yes      | Version of the Helm Chart                                 |
-| dependencies                  | string | yes      | Dependency name refering to namespace module              |
-| helm_namespace                | string | yes      | The namespace Helm will install the chart under           |
-| helm_repository               | string | yes      | The repository where the Helm chart is stored             |
-| values                        | string | no       | Values to be passed to the Helm Chart                     |
-| backup_storage_resource_group | string | yes      | The resource group containing the bucket.                 |
-| backup_storage_account        | string | yes      | The storage account containing the bucket.                |
-| backup_storage_bucket         | string | yes      | The bucket to use for backing up.                         |
-| azure_client_id               | string | yes      | The Azure Client ID to use to access the storage account. |
-| azure_client_secret           | string | yes      | The Client Secret to use for the storage backend.         |
-| azure_resource_group          | string | yes      | The Resource Group in where the Client ID resides.        |
-| azure_subscription_id         | string | yes      | The Azure Subscription ID.                                |
-| azure_tenant_id               | string | yes      | The Azure Tenant ID.                                      |
+| Name                          | Type   | Required | Value                                                         |
+| ----------------------------- | ------ | -------- | ------------------------------------------------------------- |
+| chart_version                 | string | yes      | Version of the Helm Chart                                     |
+| dependencies                  | string | yes      | Dependency name refering to namespace module                  |
+| helm_namespace                | string | yes      | The namespace Helm will install the chart under               |
+| helm_repository               | string | yes      | The repository where the Helm chart is stored                 |
+| helm_repository_username      | string | no       | The username of the repository where the Helm chart is stored |
+| helm_repository_password      | string | no       | The password of the repository where the Helm chart is stored |
+| values                        | string | no       | Values to be passed to the Helm Chart                         |
+| backup_storage_resource_group | string | yes      | The resource group containing the bucket.                     |
+| backup_storage_account        | string | yes      | The storage account containing the bucket.                    |
+| backup_storage_bucket         | string | yes      | The bucket to use for backing up.                             |
+| azure_client_id               | string | yes      | The Azure Client ID to use to access the storage account.     |
+| azure_client_secret           | string | yes      | The Client Secret to use for the storage backend.             |
+| azure_resource_group          | string | yes      | The Resource Group in where the Client ID resides.            |
+| azure_subscription_id         | string | yes      | The Azure Subscription ID.                                    |
+| azure_tenant_id               | string | yes      | The Azure Tenant ID.                                          |
 
 ## History
 
-| Date     | Release    | Change                         |
-| -------- | ---------- | ------------------------------ |
-| 20190909 | 20190909.1 | 1st release                    |
-| 20200505 | 20200505.1 | Updates for Velero 1.3.x       |
-| 20200622 | v2.0.0     | Module now modified for Helm 3 |
+| Date     | Release    | Change                                              |
+| -------- | ---------- | --------------------------------------------------- |
+| 20190909 | 20190909.1 | 1st release                                         |
+| 20200505 | 20200505.1 | Updates for Velero 1.3.x                            |
+| 20200622 | v2.0.0     | Module now modified for Helm 3                      |
+| 20201013 | v2.0.1     | Add the ability to specify a username and password. |
