@@ -22,15 +22,15 @@ The following security controls can be met through configuration of this templat
 
 ```terraform
 module "helm_velero" {
-  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v2.0.1"
+  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v3.0.0"
 
-  chart_version = "0.1.0"
+  chart_version = "2.13.6"
   dependencies = [
-    "${module.namespace_velero.depended_on}",
+    module.namespace_velero.depended_on,
   ]
 
   helm_namespace       = "velero"
-  helm_repository      = "stable"
+  helm_repository      = "https://vmware-tanzu.github.io/helm-charts"
 
   backup_storage_resource_group = var.velero_backup_storage_resource_group
   backup_storage_account        = var.velero_backup_storage_account
@@ -105,9 +105,10 @@ EOF
 
 ## History
 
-| Date     | Release    | Change                                              |
-| -------- | ---------- | --------------------------------------------------- |
-| 20190909 | 20190909.1 | 1st release                                         |
-| 20200505 | 20200505.1 | Updates for Velero 1.3.x                            |
-| 20200622 | v2.0.0     | Module now modified for Helm 3                      |
-| 20201013 | v2.0.1     | Add the ability to specify a username and password. |
+| Date     | Release    | Change                                                             |
+| -------- | ---------- | ------------------------------------------------------------------ |
+| 20190909 | 20190909.1 | 1st release                                                        |
+| 20200505 | 20200505.1 | Updates for Velero 1.3.x                                           |
+| 20200622 | v2.0.0     | Module now modified for Helm 3                                     |
+| 20201013 | v2.0.1     | Add the ability to specify a username and password.                |
+| 20201013 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart. |
