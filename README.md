@@ -22,7 +22,7 @@ The following security controls can be met through configuration of this templat
 
 ```terraform
 module "helm_velero" {
-  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v3.0.0"
+  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v3.1.0"
 
   chart_version = "2.13.6"
   dependencies = [
@@ -41,6 +41,10 @@ module "helm_velero" {
   azure_resource_group  = var.velero_azure_resource_group
   azure_subscription_id = var.velero_azure_subscription_id
   azure_tenant_id       = var.velero_azure_tenant_id
+
+  enable_monitoring    = 1
+  monitoring_namespace = module.namespace_monitoring.name
+  metrics_port         = 8085
 
   values = <<EOF
 velero:
@@ -102,6 +106,9 @@ EOF
 | azure_resource_group          | string | yes      | The Resource Group in where the Client ID resides.            |
 | azure_subscription_id         | string | yes      | The Azure Subscription ID.                                    |
 | azure_tenant_id               | string | yes      | The Azure Tenant ID.                                          |
+| enable_monitoring             | string | no       | Adds metrics Service and Prometheus Operator ServiceMonitor.  |
+| monitoring_namespace          | string | no       | The namespace where Prometheus Operator is installed.         |
+| metrics_port                  | number | no       | The service port for Prometheus metrics.                      |
 
 ## History
 
@@ -112,3 +119,4 @@ EOF
 | 20200622 | v2.0.0     | Module now modified for Helm 3                                     |
 | 20201013 | v2.0.1     | Add the ability to specify a username and password.                |
 | 20201013 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart. |
+| 20201209 | v3.1.0     | Add Service and ServiceMonitor for Prometheus Operator monitoring. |
