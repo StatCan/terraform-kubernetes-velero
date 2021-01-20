@@ -10,6 +10,21 @@ variable "helm_repository_username" {
 
 variable "chart_version" {}
 
+# Monitoring
+
+variable "enable_monitoring" {
+  type    = string
+  default = "0"
+}
+variable "monitoring_namespace" {
+  type    = string
+  default = "monitoring"
+}
+variable "metrics_port" {
+  type    = number
+  default = 8085
+}
+
 # Backup Storage Location
 
 variable "backup_storage_resource_group" {}

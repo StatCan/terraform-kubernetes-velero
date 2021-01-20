@@ -63,6 +63,74 @@ EOF
   }
 }
 
+resource "kubernetes_service" "velero" {
+  count = var.enable_monitoring ? 1 : 0
+  depends_on = [null_resource.dependency_getter]
+
+  metadata {
+    name = "velero-metrics"
+    namespace = var.helm_namespace
+    labels = {
+      "app.kubernetes.io/name" = "velero-metrics"
+      "app.kubernetes.io/instance" = "velero-metrics"
+    }
+  }
+  spec {
+    selector = {
+      name = "velero"
+      "app.kubernetes.io/name" = "velero"
+      "app.kubernetes.io/instance" = "velero"
+    }
+    session_affinity = "ClientIP"
+    port {
+      name        = "monitoring"
+      port        = var.metrics_port
+      target_port = "monitoring"
+    }
+  }
+}
+
+resource "local_file" "velero-servicemonitor" {
+  count = var.enable_monitoring ? 1 : 0
+  depends_on = [null_resource.dependency_getter]
+  
+  content     = <<EOF
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: velero-monitor
+  namespace: ${var.monitoring_namespace}
+  labels:
+    app: velero-monitor
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: velero-metrics
+      app.kubernetes.io/instance: velero-metrics
+  namespaceSelector:
+    matchNames:
+    - ${var.helm_namespace}
+  endpoints:
+  - port: monitoring
+EOF
+  filename = "${path.module}/config/velero/velero-servicemonitor.yaml"
+}
+
+resource "null_resource" "apply_servicemonitor" {
+  count = var.enable_monitoring ? 1 : 0
+  depends_on = [null_resource.dependency_getter]
+  
+  provisioner "local-exec" {
+    command = "kubectl -n ${var.monitoring_namespace} apply -f ${path.module}/config/velero/velero-servicemonitor.yaml"
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "kubectl -n ${var.monitoring_namespace} delete -f ${path.module}/config/velero/velero-servicemonitor.yaml"
+  }
+}
+
 # Part of a hack for module-to-module dependencies.
 # https://github.com/hashicorp/terraform/issues/1178#issuecomment-449158607
 resource "null_resource" "dependency_setter" {
