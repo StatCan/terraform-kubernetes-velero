@@ -25,10 +25,10 @@ resource "helm_release" "velero" {
   repository_username = var.helm_repository_username
   repository_password = var.helm_repository_password
 
-  chart      = "velero"
-  version    = var.chart_version
-  namespace  = var.helm_namespace
-  timeout    = 1200
+  chart     = "velero"
+  version   = var.chart_version
+  namespace = var.helm_namespace
+  timeout   = 1200
 
   values = [
     var.values,
@@ -64,21 +64,21 @@ EOF
 }
 
 resource "kubernetes_service" "velero" {
-  count = var.enable_monitoring ? 1 : 0
+  count      = var.enable_monitoring ? 1 : 0
   depends_on = [null_resource.dependency_getter]
 
   metadata {
-    name = "velero-metrics"
+    name      = "velero-metrics"
     namespace = var.helm_namespace
     labels = {
-      "app.kubernetes.io/name" = "velero-metrics"
+      "app.kubernetes.io/name"     = "velero-metrics"
       "app.kubernetes.io/instance" = "velero-metrics"
     }
   }
   spec {
     selector = {
-      name = "velero"
-      "app.kubernetes.io/name" = "velero"
+      name                         = "velero"
+      "app.kubernetes.io/name"     = "velero"
       "app.kubernetes.io/instance" = "velero"
     }
     session_affinity = "ClientIP"
@@ -90,11 +90,11 @@ resource "kubernetes_service" "velero" {
   }
 }
 
-resource "local_file" "velero-servicemonitor" {
-  count = var.enable_monitoring ? 1 : 0
+resource "local_file" "velero_servicemonitor" {
+  count      = var.enable_monitoring ? 1 : 0
   depends_on = [null_resource.dependency_getter]
-  
-  content     = <<EOF
+
+  sensitive_content = <<EOF
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -114,20 +114,31 @@ spec:
   endpoints:
   - port: monitoring
 EOF
-  filename = "${path.module}/config/velero/velero-servicemonitor.yaml"
+  filename          = "${path.module}/config/velero/velero-servicemonitor.yaml"
 }
 
 resource "null_resource" "apply_servicemonitor" {
   count = var.enable_monitoring ? 1 : 0
-  depends_on = [null_resource.dependency_getter]
-  
-  provisioner "local-exec" {
-    command = "kubectl -n ${var.monitoring_namespace} apply -f ${path.module}/config/velero/velero-servicemonitor.yaml"
+  depends_on = [
+    null_resource.dependency_getter,
+    local_file.velero_servicemonitor[0]
+  ]
+  triggers = {
+    manifest             = local_file.velero_servicemonitor[0].sensitive_content,
+    monitoring_namespace = var.monitoring_namespace
   }
 
   provisioner "local-exec" {
-    when    = destroy
-    command = "kubectl -n ${var.monitoring_namespace} delete -f ${path.module}/config/velero/velero-servicemonitor.yaml"
+    command = "kubectl -n ${var.monitoring_namespace} apply -f ${local_file.velero_servicemonitor[0].filename}"
+  }
+
+  # The "try" handles the failing edge-case of updating a pre-existing version of this null_resource that did not have the monitoring_namespace trigger.
+  # Such an update occurs as "destroy and then create replacement", but cannot proceed with a null trigger.
+  # This, along with the null resource and local file themselves, is a temporary workaround until we are able to manage CRDs in Terraform directly.
+  provisioner "local-exec" {
+    when       = destroy
+    command    = try("kubectl -n ${self.triggers.monitoring_namespace} delete servicemonitor velero-monitor", "")
+    on_failure = continue
   }
 }
 
