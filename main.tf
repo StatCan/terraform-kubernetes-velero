@@ -71,8 +71,8 @@ resource "kubernetes_service" "velero" {
     name      = "velero-metrics"
     namespace = var.helm_namespace
     labels = {
-      "app.kubernetes.io/name"     = "velero-metrics"
-      "app.kubernetes.io/instance" = "velero-metrics"
+      "app.kubernetes.io/name"     = "velero"
+      "app.kubernetes.io/instance" = "velero"
     }
   }
   spec {
@@ -100,14 +100,13 @@ kind: ServiceMonitor
 metadata:
   name: velero-monitor
   namespace: ${var.monitoring_namespace}
-  labels:
-    app: velero-monitor
-    release: prometheus-operator
+  labels: 
+    ${indent(4, yamlencode(var.servicemonitor_labels))}
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: velero-metrics
-      app.kubernetes.io/instance: velero-metrics
+      app.kubernetes.io/name: velero
+      app.kubernetes.io/instance: velero
   namespaceSelector:
     matchNames:
     - ${var.helm_namespace}
