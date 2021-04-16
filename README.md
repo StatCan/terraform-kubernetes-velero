@@ -42,9 +42,13 @@ module "helm_velero" {
   azure_subscription_id = var.velero_azure_subscription_id
   azure_tenant_id       = var.velero_azure_tenant_id
 
-  enable_monitoring    = true
-  monitoring_namespace = module.namespace_monitoring.name
-  metrics_port         = 8085
+  enable_monitoring     = true
+  monitoring_namespace  = module.namespace_monitoring.name
+  servicemonitor_labels = {
+    app     = "velero"
+    release = module.helm_kube_prometheus_stack.helm_release
+  }
+  metrics_port          = 8085
 
   values = <<EOF
 velero:
@@ -108,6 +112,7 @@ EOF
 | azure_tenant_id               | string | yes      | The Azure Tenant ID.                                          |
 | enable_monitoring             | bool   | no       | Adds metrics Service and Prometheus Operator ServiceMonitor.  |
 | monitoring_namespace          | string | no       | The namespace where Prometheus Operator is installed.         |
+| servicemonitor_labels         | map    | no       | The labels of the Velero ServiceMonitor.                      |
 | metrics_port                  | number | no       | The service port for Prometheus metrics.                      |
 
 ## History
@@ -121,3 +126,4 @@ EOF
 | 20201013 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart. |
 | 20201209 | v3.1.0     | Add Service and ServiceMonitor for Prometheus Operator monitoring. |
 | 20210301 | v3.1.1     | Refactor for plan noise from ServiceMonitor and deprecated syntax. |
+| 20210412 | v3.2.0     | Add servicemonitor_labels variable.                                |

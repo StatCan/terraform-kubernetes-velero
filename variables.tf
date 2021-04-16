@@ -30,6 +30,14 @@ variable "monitoring_namespace" {
   default     = "monitoring"
   description = "The namespace where Prometheus Operator is installed"
 }
+variable "servicemonitor_labels" {
+  type        = map
+  default     = {
+    app     = "velero"
+    release = "kube-prometheus-stack"
+  }
+  description = "The labels of the Velero ServiceMonitor"
+}
 variable "metrics_port" {
   type        = number
   default     = 8085
