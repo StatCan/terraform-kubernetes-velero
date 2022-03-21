@@ -31,8 +31,8 @@ variable "monitoring_namespace" {
   description = "The namespace where Prometheus Operator is installed"
 }
 variable "servicemonitor_labels" {
-  type        = map
-  default     = {
+  type = map(string)
+  default = {
     app     = "velero"
     release = "kube-prometheus-stack"
   }
@@ -75,11 +75,6 @@ variable "azure_subscription_id" {
 
 variable "azure_tenant_id" {
   description = "The Azure Tenant ID"
-}
-
-variable "dependencies" {
-  type        = list
-  description = "Dependency name refering to namespace module"
 }
 
 variable "values" {

@@ -22,11 +22,11 @@ The following security controls can be met through configuration of this templat
 
 ```terraform
 module "helm_velero" {
-  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v3.1.1"
+  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v4.0.0"
 
   chart_version = "2.13.6"
-  dependencies = [
-    module.namespace_velero.depended_on,
+  depends_on = [
+    module.namespace_velero,
   ]
 
   helm_namespace       = "velero"
@@ -117,13 +117,24 @@ EOF
 
 ## History
 
-| Date     | Release    | Change                                                             |
-| -------- | ---------- | ------------------------------------------------------------------ |
-| 20190909 | 20190909.1 | 1st release                                                        |
-| 20200505 | 20200505.1 | Updates for Velero 1.3.x                                           |
-| 20200622 | v2.0.0     | Module now modified for Helm 3                                     |
-| 20201013 | v2.0.1     | Add the ability to specify a username and password.                |
-| 20201013 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart. |
-| 20201209 | v3.1.0     | Add Service and ServiceMonitor for Prometheus Operator monitoring. |
-| 20210301 | v3.1.1     | Refactor for plan noise from ServiceMonitor and deprecated syntax. |
-| 20210412 | v3.2.0     | Add servicemonitor_labels variable.                                |
+| Date       | Release    | Change                                                                      |
+| ---------- | ---------- | --------------------------------------------------------------------------- |
+| 2019-09-09 | 20190909.1 | 1st release                                                                 |
+| 2020-05-05 | 20200505.1 | Updates for Velero 1.3.x                                                    |
+| 2020-06-22 | v2.0.0     | Module now modified for Helm 3                                              |
+| 2020-10-13 | v2.0.1     | Add the ability to specify a username and password                          |
+| 2020-10-13 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart           |
+| 2020-12-09 | v3.1.0     | Add Service and ServiceMonitor for Prometheus Operator monitoring           |
+| 2021-03-01 | v3.1.1     | Refactor for plan noise from ServiceMonitor and deprecated syntax           |
+| 2021-04-12 | v3.2.0     | Add `servicemonitor_labels` variable                                        |
+| 2021-12-15 | v4.0.0     | Convert ServiceMonitor to `kubernetes_manifest` and update for Terraform v1 |
+
+## Upgrading
+
+### From v3.x to v4.x
+
+1. Note that in [Usage](#usage) the `dependencies` array has been replaced by the `depends_on` array.
+1. If you have enabled and will continue to enable monitoring, a manual step is required for the Velero ServiceMonitor.
+    - If a brief interruption in Velero metrics is acceptable, delete the ServiceMonitor prior to the upgrade. It will be recreated during the upgrade process. 
+    - Otherwise, import the ServiceMonitor into Terraform: `terraform import module.helm_velero.kubernetes_manifest.velero_servicemonitor[0] "apiVersion=monitoring.coreos.com/v1,kind=ServiceMonitor,namespace=monitoring,name=velero-monitor"`
+      - If your monitoring namespace is not called `monitoring`, use the actual monitoring namespace name after `namespace=`
