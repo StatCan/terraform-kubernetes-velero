@@ -18,32 +18,6 @@ variable "chart_version" {
   description = "Version of the Helm chart"
 }
 
-# Monitoring
-
-variable "enable_monitoring" {
-  type        = bool
-  default     = false
-  description = "Adds metrics Service and Prometheus Operator ServiceMonitor"
-}
-variable "monitoring_namespace" {
-  type        = string
-  default     = "monitoring"
-  description = "The namespace where Prometheus Operator is installed"
-}
-variable "servicemonitor_labels" {
-  type = map(string)
-  default = {
-    app     = "velero"
-    release = "kube-prometheus-stack"
-  }
-  description = "The labels of the Velero ServiceMonitor"
-}
-variable "metrics_port" {
-  type        = number
-  default     = 8085
-  description = "The service port for Prometheus metrics"
-}
-
 # Backup Storage Location
 
 variable "backup_storage_resource_group" {

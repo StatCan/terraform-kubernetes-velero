@@ -22,9 +22,9 @@ The following security controls can be met through configuration of this templat
 
 ```terraform
 module "helm_velero" {
-  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v4.0.0"
+  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v5.0.0"
 
-  chart_version = "2.13.6"
+  chart_version = "2.30.2"
   depends_on = [
     module.namespace_velero,
   ]
@@ -42,24 +42,16 @@ module "helm_velero" {
   azure_subscription_id = var.velero_azure_subscription_id
   azure_tenant_id       = var.velero_azure_tenant_id
 
-  enable_monitoring     = true
-  monitoring_namespace  = module.namespace_monitoring.name
-  servicemonitor_labels = {
-    app     = "velero"
-    release = module.helm_kube_prometheus_stack.helm_release
-  }
-  metrics_port          = 8085
-
   values = <<EOF
 velero:
   image:
     repository: velero/velero
-    tag: v1.3.1
-    digest: sha256:0c74f1d552ef25a4227e582f4c0e6b3db3402abe196595ee9442ceeb43b99696
+    tag: v1.9.0
+    digest: sha256:97f13dd3d199e9277f57341e37cd6c80d9db65562e07eb60e1c13ff8618b4b0c
     pullPolicy: IfNotPresent
   initContainers:
     - name: velero-plugin-for-azure
-      image: velero/velero-plugin-for-microsoft-azure:v1.0.1
+      image: velero/velero-plugin-for-microsoft-azure:v1.5.0
       imagePullPolicy: IfNotPresent
       volumeMounts:
         - mountPath: /target
@@ -77,6 +69,13 @@ velero:
       # Cloud provider where volume snapshots are being taken. Usually
       # should match `configuration.provider`. Required.,
       name: default
+  # Prometheus Operator ServiceMonitor for Velero metrics
+  metrics:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: ${module.helm_kube_prometheus_stack.helm_release}
+      namespace: ${module.namespace_monitoring.name}
   # Backup schedules to create.
   # Eg:
   # schedules:
@@ -110,10 +109,6 @@ EOF
 | azure_resource_group          | string | yes      | The Resource Group in where the Client ID resides.            |
 | azure_subscription_id         | string | yes      | The Azure Subscription ID.                                    |
 | azure_tenant_id               | string | yes      | The Azure Tenant ID.                                          |
-| enable_monitoring             | bool   | no       | Adds metrics Service and Prometheus Operator ServiceMonitor.  |
-| monitoring_namespace          | string | no       | The namespace where Prometheus Operator is installed.         |
-| servicemonitor_labels         | map    | no       | The labels of the Velero ServiceMonitor.                      |
-| metrics_port                  | number | no       | The service port for Prometheus metrics.                      |
 
 ## History
 
@@ -128,8 +123,18 @@ EOF
 | 2021-03-01 | v3.1.1     | Refactor for plan noise from ServiceMonitor and deprecated syntax           |
 | 2021-04-12 | v3.2.0     | Add `servicemonitor_labels` variable                                        |
 | 2021-12-15 | v4.0.0     | Convert ServiceMonitor to `kubernetes_manifest` and update for Terraform v1 |
+| 2022-08-04 | v5.0.0     | Remove Prometheus Operator monitoring, now available through the chart      |
 
 ## Upgrading
+
+### From v4.x to v5.x
+
+If using the Prometheus Operator to monitor Velero metrics:
+1. Ensure that `chart-version` is at or above `2.14.4`
+1. Remove the Terraform variables `enable_monitoring`, `monitoring_namespace`, `servicemonitor_labels`, and `metrics_port`
+1. Refer to the Velero Helm chart values in the [usage example](#usage) for the ServiceMonitor configuration. 
+    - The metrics Service is enabled by default. It can be explicitly disabled by setting `metrics.enabled` to `false`
+    - The usage example places the ServiceMonitor into the same namespace as the Prometheus Operator. A different namespace can be specified, or no namespace can be specified defaulting to placement in the same namespace as Velero. In those cases, the Prometheus Operator may need to be configured to pick up ServiceMonitors from namespaces other than its own.
 
 ### From v3.x to v4.x
 
