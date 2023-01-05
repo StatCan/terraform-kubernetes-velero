@@ -109,6 +109,7 @@ EOF
 | azure_resource_group          | string | yes      | The Resource Group in where the Client ID resides.            |
 | azure_subscription_id         | string | yes      | The Azure Subscription ID.                                    |
 | azure_tenant_id               | string | yes      | The Azure Tenant ID.                                          |
+| enable_prometheusrules        | string | no       | Adds PrometheusRules for velero alerts                        |
 
 ## History
 
@@ -124,6 +125,7 @@ EOF
 | 2021-04-12 | v3.2.0     | Add `servicemonitor_labels` variable                                        |
 | 2021-12-15 | v4.0.0     | Convert ServiceMonitor to `kubernetes_manifest` and update for Terraform v1 |
 | 2022-08-04 | v5.0.0     | Remove Prometheus Operator monitoring, now available through the chart      |
+| 2023-01-05 | v5.1.0     | Added Velero rules from kube-prometheus-stack                               |
 
 ## Upgrading
 
@@ -132,7 +134,7 @@ EOF
 If using the Prometheus Operator to monitor Velero metrics:
 1. Ensure that `chart-version` is at or above `2.14.4`
 1. Remove the Terraform variables `enable_monitoring`, `monitoring_namespace`, `servicemonitor_labels`, and `metrics_port`
-1. Refer to the Velero Helm chart values in the [usage example](#usage) for the ServiceMonitor configuration. 
+1. Refer to the Velero Helm chart values in the [usage example](#usage) for the ServiceMonitor configuration.
     - The metrics Service is enabled by default. It can be explicitly disabled by setting `metrics.enabled` to `false`
     - The usage example places the ServiceMonitor into the same namespace as the Prometheus Operator. A different namespace can be specified, or no namespace can be specified defaulting to placement in the same namespace as Velero. In those cases, the Prometheus Operator may need to be configured to pick up ServiceMonitors from namespaces other than its own.
 
@@ -140,6 +142,6 @@ If using the Prometheus Operator to monitor Velero metrics:
 
 1. Note that in [Usage](#usage) the `dependencies` array has been replaced by the `depends_on` array.
 1. If you have enabled and will continue to enable monitoring, a manual step is required for the Velero ServiceMonitor.
-    - If a brief interruption in Velero metrics is acceptable, delete the ServiceMonitor prior to the upgrade. It will be recreated during the upgrade process. 
+    - If a brief interruption in Velero metrics is acceptable, delete the ServiceMonitor prior to the upgrade. It will be recreated during the upgrade process.
     - Otherwise, import the ServiceMonitor into Terraform: `terraform import module.helm_velero.kubernetes_manifest.velero_servicemonitor[0] "apiVersion=monitoring.coreos.com/v1,kind=ServiceMonitor,namespace=monitoring,name=velero-monitor"`
       - If your monitoring namespace is not called `monitoring`, use the actual monitoring namespace name after `namespace=`
