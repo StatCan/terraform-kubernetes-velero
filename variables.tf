@@ -56,3 +56,9 @@ variable "values" {
   type        = string
   description = "Values to be passed to the Helm Chart"
 }
+
+variable "enable_prometheusrules" {
+  type        = bool
+  default     = true
+  description = "Adds PrometheusRules for velero alerts"
+}
