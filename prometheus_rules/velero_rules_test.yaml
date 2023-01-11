@@ -27,6 +27,7 @@ tests:
                       schedule: velero-fusion-backup
                   exp_annotations:
                       message: Failed backup in Velero schedule velero-fusion-backup.
+                      runbook: "${general_runbook_url}"
           - eval_time: 27m
             alertname: VeleroBackupFailure
             exp_alerts:
@@ -37,6 +38,7 @@ tests:
                       schedule: velero-fusion-backup
                   exp_annotations:
                       message: Failed backup in Velero schedule velero-fusion-backup.
+                      runbook: "${general_runbook_url}"
           - eval_time: 34m
             alertname: VeleroBackupFailure
             exp_alerts:
@@ -47,6 +49,7 @@ tests:
                       schedule: velero-fusion-backup
                   exp_annotations:
                       message: Failed backup in Velero schedule velero-fusion-backup.
+                      runbook: "${general_runbook_url}"
           - eval_time: 35m
             alertname: VeleroBackupFailure
             exp_alerts: []
@@ -60,3 +63,4 @@ tests:
                       schedule: velero-fusion-backup
                   exp_annotations:
                       message: Failed backup in Velero schedule velero-fusion-backup.
+                      runbook: "${general_runbook_url}"
