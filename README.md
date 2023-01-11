@@ -126,6 +126,7 @@ EOF
 | 2021-12-15 | v4.0.0     | Convert ServiceMonitor to `kubernetes_manifest` and update for Terraform v1 |
 | 2022-08-04 | v5.0.0     | Remove Prometheus Operator monitoring, now available through the chart      |
 | 2023-01-05 | v5.1.0     | Added Velero rules from kube-prometheus-stack                               |
+| 2023-01-09 | v5.2.0     | Add runbook links to Prometheus rules                                       |
 
 ## Upgrading
 

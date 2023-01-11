@@ -2,7 +2,7 @@ locals {
   common_labels = {
     "app.kubernetes.io/managed-by" = "terraform"
     "app.kubernetes.io/part-of"    = "velero"
-    "app.kubernetes.io/version"    = "v5.1.0"
+    "app.kubernetes.io/version"    = "v5.2.0"
   }
 }
 
@@ -19,6 +19,8 @@ resource "kubernetes_manifest" "prometheusrule_velero_alerts" {
         "rules-definition" = "https://gitlab.k8s.cloud.statcan.ca/cloudnative/terraform/modules/terraform-kubernetes-velero/-/tree/master/prometheus_rules/velero_rules.yaml"
       }
     }
-    "spec" = yamldecode(file("${path.module}/prometheus_rules/velero_rules.yaml"))
+    "spec" = yamldecode(templatefile("${path.module}/prometheus_rules/velero_rules.yaml", {
+      general_runbook_url = "https://cloudnative.pages.cloud.statcan.ca/en/documentation/monitoring-surveillance/prometheus/cluster-alert-runbooks/velero/"
+    }))
   }
 }
