@@ -6,12 +6,18 @@ variable "helm_repository" {
   description = "The repository where the Helm chart is stored"
 }
 variable "helm_repository_password" {
+  type        = string
+  nullable    = false
   default     = ""
   description = "The password of the repository where the Helm chart is stored"
+  sensitive   = true
 }
 variable "helm_repository_username" {
+  type        = string
+  nullable    = false
   default     = ""
   description = "The username of the repository where the Helm chart is stored"
+  sensitive   = true
 }
 
 variable "chart_version" {
@@ -34,9 +40,11 @@ variable "backup_storage_bucket" {
 
 variable "azure_client_id" {
   description = "The Azure Client ID to use to access the storage account"
+  sensitive   = true
 }
 variable "azure_client_secret" {
   description = "The Client Secret to use for the storage backend"
+  sensitive   = true
 }
 
 variable "azure_resource_group" {
@@ -49,6 +57,7 @@ variable "azure_subscription_id" {
 
 variable "azure_tenant_id" {
   description = "The Azure Tenant ID"
+  sensitive   = true
 }
 
 variable "values" {
