@@ -22,7 +22,7 @@ The following security controls can be met through configuration of this templat
 
 ```terraform
 module "helm_velero" {
-  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v5.0.0"
+  source = "git::https://github.com/canada-ca-terraform-modules/terraform-kubernetes-velero.git?ref=v5.2.1"
 
   chart_version = "2.30.2"
   depends_on = [
@@ -127,6 +127,7 @@ EOF
 | 2022-08-04 | v5.0.0     | Remove Prometheus Operator monitoring, now available through the chart      |
 | 2023-01-05 | v5.1.0     | Added Velero rules from kube-prometheus-stack                               |
 | 2023-01-09 | v5.2.0     | Add runbook links to Prometheus rules                                       |
+| 2023-02-03 | v5.2.1     | Specify sensitive variables   |
 
 ## Upgrading
 
