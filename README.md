@@ -128,6 +128,7 @@ EOF
 | 2023-01-05 | v5.1.0     | Added Velero rules from kube-prometheus-stack                               |
 | 2023-01-09 | v5.2.0     | Add runbook links to Prometheus rules                                       |
 | 2023-02-03 | v5.2.1     | Specify sensitive variables   |
+| 2023-04-12 | v5.3.0     | In Velero rules that use aggregation, group by cluster as well. |
 
 ## Upgrading
 

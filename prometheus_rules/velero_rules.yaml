@@ -1,9 +1,9 @@
 groups:
   - name: velero.rules
     rules:
-      - expr: 'sum by(schedule) (velero_backup_failure_total{schedule!=""} - velero_backup_failure_total offset 10m)'
+      - expr: 'sum by(cluster, schedule) (velero_backup_failure_total{schedule!=""} - velero_backup_failure_total offset 10m)'
         record: velero_schedule_failure_increment
-      - expr: 'sum by(schedule) (velero_backup_partial_failure_total{schedule!=""} - velero_backup_partial_failure_total offset 10m)'
+      - expr: 'sum by(cluster, schedule) (velero_backup_partial_failure_total{schedule!=""} - velero_backup_partial_failure_total offset 10m)'
         record: velero_schedule_partial_failure_increment
 
       - alert: VeleroBackupFailure
@@ -52,7 +52,7 @@ groups:
         annotations:
           message: 'A Velero backup for schedule {{ $labels.schedule }} is taking longer then 2 hours and 30 minutes.'
           runbook: "${general_runbook_url}"
-        expr: 'sum by(schedule) (changes(velero_backup_attempt_total{schedule!=""}[48h])) > 0 unless sum by(schedule) ((changes(velero_backup_success_total{schedule!=""}[2h30m]) + changes(velero_backup_partial_failure_total{schedule!=""}[2h30m]) + changes(velero_backup_failure_total{schedule!=""}[2h30m]) + changes(velero_backup_validation_failure_total{schedule!=""}[2h30m])) > 0)'
+        expr: 'sum by(cluster, schedule) (changes(velero_backup_attempt_total{schedule!=""}[48h])) > 0 unless sum by(cluster, schedule) ((changes(velero_backup_success_total{schedule!=""}[2h30m]) + changes(velero_backup_partial_failure_total{schedule!=""}[2h30m]) + changes(velero_backup_failure_total{schedule!=""}[2h30m]) + changes(velero_backup_validation_failure_total{schedule!=""}[2h30m])) > 0)'
         for: 1m
         labels:
           resolves: never
@@ -63,7 +63,7 @@ groups:
         annotations:
           message: 'Hourly failure in backup schedule {{ $labels.schedule }}!'
           runbook: "${general_runbook_url}"
-        expr: 'sum by(schedule) (velero_backup_failure_total{schedule="velero-hourly-resources"} - velero_backup_failure_total{schedule="velero-hourly-resources"} offset 160m > 1)'
+        expr: 'sum by(cluster, schedule) (velero_backup_failure_total{schedule="velero-hourly-resources"} - velero_backup_failure_total{schedule="velero-hourly-resources"} offset 160m > 1)'
         for: 15s
         labels:
           scope: cluster
@@ -73,7 +73,7 @@ groups:
         annotations:
           message: 'Hourly partial failure in backup schedule {{ $labels.schedule }}.'
           runbook: "${general_runbook_url}"
-        expr: 'sum by(schedule) (velero_backup_partial_failure_total{schedule="velero-hourly-resources"} - velero_backup_partial_failure_total{schedule="velero-hourly-resources"} offset 160m > 1)'
+        expr: 'sum by(cluster, schedule) (velero_backup_partial_failure_total{schedule="velero-hourly-resources"} - velero_backup_partial_failure_total{schedule="velero-hourly-resources"} offset 160m > 1)'
         for: 15s
         labels:
           scope: cluster
