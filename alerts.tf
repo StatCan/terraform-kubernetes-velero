@@ -2,7 +2,7 @@ locals {
   common_labels = {
     "app.kubernetes.io/managed-by" = "terraform"
     "app.kubernetes.io/part-of"    = "velero"
-    "app.kubernetes.io/version"    = "v5.3.0"
+    "app.kubernetes.io/version"    = "v6.0.0"
   }
 }
 
