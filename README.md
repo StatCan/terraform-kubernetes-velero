@@ -10,14 +10,6 @@ The following security controls can be met through configuration of this templat
 
 * TBD
 
-## Dependencies
-
-* None
-
-## Optional (depending on options configured):
-
-* None
-
 ## Usage
 
 ```terraform
@@ -29,18 +21,19 @@ module "helm_velero" {
     module.namespace_velero,
   ]
 
-  helm_namespace       = "velero"
-  helm_repository      = "https://vmware-tanzu.github.io/helm-charts"
+  helm_namespace = "velero"
 
-  backup_storage_resource_group = var.velero_backup_storage_resource_group
-  backup_storage_account        = var.velero_backup_storage_account
-  backup_storage_bucket         = var.velero_backup_storage_bucket
+  helm_repository = {
+    name = "https://vmware-tanzu.github.io/helm-charts"
+  }
 
-  azure_client_id       = var.velero_azure_client_id
-  azure_client_secret   = var.velero_azure_client_secret
-  azure_resource_group  = var.velero_azure_resource_group
-  azure_subscription_id = var.velero_azure_subscription_id
-  azure_tenant_id       = var.velero_azure_tenant_id
+  cloud_provider_credentials = {
+    client_id       = var.velero_azure_client_id,
+    client_secret   = var.velero_azure_client_secret,
+    resource_group  = var.velero_azure_resource_group,
+    subscription_id = var.velero_azure_subscription_id,
+    tenant_id       = var.velero_azure_tenant_id
+  }
 
   values = <<EOF
 velero:
@@ -62,13 +55,17 @@ velero:
     # Parameters for the `default` BackupStorageLocation. See
     # https://velero.io/docs/v1.0.0/api-types/backupstoragelocation/
     backupStorageLocation:
-      name: default
+    - name: default
+      bucket: ${var.velero_backup_storage_bucket}
+      config:
+        resourceGroup: ${var.velero_backup_storage_resource_group}
+        storageAccount: ${var.velero_backup_storage_account}
     # Parameters for the `default` VolumeSnapshotLocation. See
     # https://velero.io/docs/v1.0.0/api-types/volumesnapshotlocation/
     volumeSnapshotLocation:
       # Cloud provider where volume snapshots are being taken. Usually
       # should match `configuration.provider`. Required.,
-      name: default
+      - name: default
   # Prometheus Operator ServiceMonitor for Velero metrics
   metrics:
     serviceMonitor:
@@ -89,46 +86,60 @@ velero:
 EOF
 }
 ```
+<!-- BEGIN_TF_DOCS -->
+## Requirements
 
-## Variables Values
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
+| <a name="requirement_helm"></a> [helm](#requirement\_helm) | >= 2.0.0 |
 
-| Name                          | Type   | Required | Value                                                         |
-| ----------------------------- | ------ | -------- | ------------------------------------------------------------- |
-| chart_version                 | string | yes      | Version of the Helm Chart                                     |
-| dependencies                  | string | yes      | Dependency name refering to namespace module                  |
-| helm_namespace                | string | yes      | The namespace Helm will install the chart under               |
-| helm_repository               | string | yes      | The repository where the Helm chart is stored                 |
-| helm_repository_username      | string | no       | The username of the repository where the Helm chart is stored |
-| helm_repository_password      | string | no       | The password of the repository where the Helm chart is stored |
-| values                        | string | no       | Values to be passed to the Helm Chart                         |
-| backup_storage_resource_group | string | yes      | The resource group containing the bucket.                     |
-| backup_storage_account        | string | yes      | The storage account containing the bucket.                    |
-| backup_storage_bucket         | string | yes      | The bucket to use for backing up.                             |
-| azure_client_id               | string | yes      | The Azure Client ID to use to access the storage account.     |
-| azure_client_secret           | string | yes      | The Client Secret to use for the storage backend.             |
-| azure_resource_group          | string | yes      | The Resource Group in where the Client ID resides.            |
-| azure_subscription_id         | string | yes      | The Azure Subscription ID.                                    |
-| azure_tenant_id               | string | yes      | The Azure Tenant ID.                                          |
-| enable_prometheusrules        | string | no       | Adds PrometheusRules for velero alerts                        |
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_helm"></a> [helm](#provider\_helm) | >= 2.0.0 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | n/a |
+
+
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | Version of the Helm chart | `any` | n/a | yes |
+| <a name="input_cloud_provider_credentials"></a> [cloud\_provider\_credentials](#input\_cloud\_provider\_credentials) | Azure Credentials required to access the storage account | <pre>object({<br>    client_id       = string<br>    client_secret   = string<br>    resource_group  = string<br>    subscription_id = string<br>    tenant_id       = string<br>  })</pre> | n/a | yes |
+| <a name="input_helm_namespace"></a> [helm\_namespace](#input\_helm\_namespace) | The namespace Helm will install the chart under | `any` | n/a | yes |
+| <a name="input_helm_repository"></a> [helm\_repository](#input\_helm\_repository) | The repository where the Helm chart is stored | <pre>object({<br>    name     = string<br>    username = optional(string, "")<br>    password = optional(string, "")<br>  })</pre> | n/a | yes |
+| <a name="input_enable_prometheusrules"></a> [enable\_prometheusrules](#input\_enable\_prometheusrules) | Adds PrometheusRules for velero alerts | `bool` | `true` | no |
+| <a name="input_values"></a> [values](#input\_values) | Values to be passed to the Helm Chart | `string` | `""` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_helm_namespace"></a> [helm\_namespace](#output\_helm\_namespace) | n/a |
+<!-- END_TF_DOCS -->
 
 ## History
 
-| Date       | Release    | Change                                                                      |
-| ---------- | ---------- | --------------------------------------------------------------------------- |
-| 2019-09-09 | 20190909.1 | 1st release                                                                 |
-| 2020-05-05 | 20200505.1 | Updates for Velero 1.3.x                                                    |
-| 2020-06-22 | v2.0.0     | Module now modified for Helm 3                                              |
-| 2020-10-13 | v2.0.1     | Add the ability to specify a username and password                          |
-| 2020-10-13 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart           |
-| 2020-12-09 | v3.1.0     | Add Service and ServiceMonitor for Prometheus Operator monitoring           |
-| 2021-03-01 | v3.1.1     | Refactor for plan noise from ServiceMonitor and deprecated syntax           |
-| 2021-04-12 | v3.2.0     | Add `servicemonitor_labels` variable                                        |
-| 2021-12-15 | v4.0.0     | Convert ServiceMonitor to `kubernetes_manifest` and update for Terraform v1 |
-| 2022-08-04 | v5.0.0     | Remove Prometheus Operator monitoring, now available through the chart      |
-| 2023-01-05 | v5.1.0     | Added Velero rules from kube-prometheus-stack                               |
-| 2023-01-09 | v5.2.0     | Add runbook links to Prometheus rules                                       |
-| 2023-02-03 | v5.2.1     | Specify sensitive variables   |
-| 2023-04-12 | v5.3.0     | In Velero rules that use aggregation, group by cluster as well. |
+| Date       | Release    | Change                                                                                              |
+| ---------- | ---------- | --------------------------------------------------------------------------------------------------- |
+| 2019-09-09 | 20190909.1 | 1st release                                                                                         |
+| 2020-05-05 | 20200505.1 | Updates for Velero 1.3.x                                                                            |
+| 2020-06-22 | v2.0.0     | Module now modified for Helm 3                                                                      |
+| 2020-10-13 | v2.0.1     | Add the ability to specify a username and password                                                  |
+| 2020-10-13 | v3.0.0     | Remove prefix for velero subchart due to moving to upstream chart                                   |
+| 2020-12-09 | v3.1.0     | Add Service and ServiceMonitor for Prometheus Operator monitoring                                   |
+| 2021-03-01 | v3.1.1     | Refactor for plan noise from ServiceMonitor and deprecated syntax                                   |
+| 2021-04-12 | v3.2.0     | Add `servicemonitor_labels` variable                                                                |
+| 2021-12-15 | v4.0.0     | Convert ServiceMonitor to `kubernetes_manifest` and update for Terraform v1                         |
+| 2022-08-04 | v5.0.0     | Remove Prometheus Operator monitoring, now available through the chart                              |
+| 2023-01-05 | v5.1.0     | Added Velero rules from kube-prometheus-stack                                                       |
+| 2023-01-09 | v5.2.0     | Add runbook links to Prometheus rules                                                               |
+| 2023-02-03 | v5.2.1     | Specify sensitive variables                                                                         |
+| 2023-04-12 | v5.3.0     | In Velero rules that use aggregation, group by cluster as well.                                     |
+| 2023-04-12 | v6.0.0     | Remove Backup Storage Location variables and consolidate cloud provider credential & helm repository variables into `cloud_provider_credentials` & `helm_repository` respectively. |
 
 ## Upgrading
 
